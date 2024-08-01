@@ -1,0 +1,116 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Bottle',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: SpinTheBottle(),
+    );
+  }
+}
+
+class SpinTheBottle extends StatefulWidget {
+  @override
+  _SpinTheBottleState createState() => _SpinTheBottleState();
+}
+
+class _SpinTheBottleState extends State<SpinTheBottle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  double _angle = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..addListener(() {
+        setState(() {
+          _angle = _controller.value * 6.28; // 2 * pi
+        });
+      });
+  }
+
+  void _spin() {
+    _controller.forward(from: 0.0);
+    Future.delayed(const Duration(seconds: 3), () {
+      _controller.stop();
+      _showResult();
+    });
+  }
+
+  void _showResult() {
+    // Random person selection
+    final List<String> players = ['Dan', 'John', 'Olivia', 'Elizabeth'];
+    final int index = Random().nextInt(players.length);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Result'),
+          content: Text('The bottle points to: ${players[index]}'),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Bottle'),
+      ),
+      body: Center(
+        child: GestureDetector(
+          onTap: _spin,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Transform.rotate(
+                angle: _angle,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Bottle',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
